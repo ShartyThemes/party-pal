@@ -134,9 +134,9 @@
   content: url('https://sharty-themes.b-cdn.net/party-pal/images/pal.png');
   position: fixed;
   transform-origin: top left;
-  zoom: 17%;
-  left: 105%;
-  top: 90%;
+  transform: scale(.17);
+  left: 100%;
+  top: 95%;
 }
 
 .dance::after {
