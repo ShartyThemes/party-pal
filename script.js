@@ -77,7 +77,7 @@ if (!isBootUp) {
   bootScreen.classList.add("hidden");
 };
 
-// Box 
+// Home page box 
 
 const boxWrap = document.querySelector("div.box-wrap");
 
@@ -164,6 +164,219 @@ const stopDrag = () => {
 };
 
 popup.addEventListener("mousedown", startDrag);
+
+// Eye 
+
+function createEyeContainer() {
+  const eyeContainer = document.createElement('div');
+  eyeContainer.id = "eye-container";
+  eyeContainer.innerHTML = `
+    <input id="eye" type="button">
+    <img id="pupil" src="https://sharty-themes.b-cdn.net/party-pal/images/pupil.svg">
+  `;
+  document.querySelector("h1").appendChild(eyeContainer);
+};
+
+createEyeContainer();
+
+document.addEventListener('mousemove', (event) => {
+  const eye = document.getElementById('eye-container');
+  const pupil = document.getElementById('pupil');
+  const eyeRect = eye.getBoundingClientRect();
+  const eyeCenterX = eyeRect.left + eyeRect.width / 2;
+  const eyeCenterY = eyeRect.top + eyeRect.height / 2;
+  const mouseX = event.clientX;
+  const mouseY = event.clientY;
+  const deltaX = mouseX - eyeCenterX;
+  const deltaY = mouseY - eyeCenterY;
+  const maxPupilMove = (eyeRect.width - pupil.offsetWidth) / 2;
+  const angle = Math.atan2(deltaY, deltaX);
+  const distance = Math.hypot(deltaX, deltaY);
+  const threshold = 10;
+  let pupilX, pupilY;
+
+  if (distance < threshold) {
+    pupilX = (deltaX / threshold) * maxPupilMove * -1;
+    pupilY = (deltaY / threshold) * maxPupilMove * -1;
+  } else {
+    pupilX = maxPupilMove * Math.cos(angle) * -1;
+    pupilY = maxPupilMove * Math.sin(angle) * -1;
+  }
+
+  pupil.style.transform = `translate(-50%, -50%) translate(${pupilX}px, ${pupilY}px)`;
+});
+
+// Boardlist pal
+
+function createBoardlistPal() {
+  const BoardlistPal = document.createElement('span');
+  BoardlistPal.id = "pal-boardlist";
+  BoardlistPal.innerHTML = `
+    [ <p style="display: inline-block; color: #34345C; margin:0;">Party Pal</p> ]
+  `;
+  const boardlist = document.querySelector('.boardlist');
+  boardlist.appendChild(BoardlistPal);
+  BoardlistPal.setAttribute("class", "sub");
+  BoardlistPal.setAttribute("data-description", "13");
+};
+
+createBoardlistPal();
+
+// Options 
+
+function createOptionsContainer() {
+  const optionsContainer = document.createElement('div');
+  optionsContainer.id = "options-container";
+  optionsContainer.innerHTML = `
+    <div class="options-background"></div>
+  `;
+  optionsContainer.classList.add('hidden');
+  document.body.appendChild(optionsContainer);
+};
+
+createOptionsContainer();
+
+function createOptionsPopup() {
+  const optionsPopup = document.createElement('div');
+  optionsPopup.id = "options-popup";
+  optionsPopup.classList.add('popup-styles');
+  document.querySelector('#options-container').appendChild(optionsPopup);
+};
+
+createOptionsPopup();
+
+// Options popup
+
+const OptionsPopupSound = new Audio("https://sharty-themes.b-cdn.net/party-pal/sounds/options.mp3");
+
+const optionsContainer = document.getElementById('options-container');
+const optionsPopup = document.getElementById('options-popup');
+
+function showOptionsPopup() {
+  optionsPopup.innerHTML = `
+    <p>How may I help you?</p>
+    <div class="popup-btn-container">
+      <button id="wiki-btn">Wiki</button>
+      <button id="ru-btn">'Ru</button>
+      <button id="music-btn">Music</button>
+      <button id="options-ok-btn">Ok</button>
+    </div>
+  `;
+  optionsContainer.classList.remove('hidden');
+  popup.classList.add('hidden');
+  document.getElementById('options-ok-btn').addEventListener('click', hideOptionsPopup);
+  document.getElementById('wiki-btn').addEventListener('click', () => updateOptionsToWiki());
+  document.getElementById('ru-btn').addEventListener('click', () => updateOptionsToRu());
+  document.getElementById('music-btn').addEventListener('click', () => updateOptionsToMusic());
+  updateDanceAnimation();
+  checkActive = false;
+  computeCheck.pause();
+};
+
+function updateOptionsToWiki() {
+  optionsPopup.innerHTML = `
+    <iframe src="https://wiki.soyjak.party/" style="width: 300px; height: 150px;"></iframe>
+    <button id="options-back-btn">Back</button>
+    <button id="options-ok-btn">Ok</button>
+  `;
+  document.getElementById('options-ok-btn').addEventListener('click', hideOptionsPopup);
+  document.getElementById('options-back-btn').addEventListener('click', showOptionsPopup);
+  updateDanceAnimation();
+};
+
+function updateOptionsToRu() {
+  optionsPopup.innerHTML = `
+    <iframe src="https://booru.soy/" style="width: 300px; height: 150px;"></iframe>
+    <button id="options-back-btn">Back</button>
+    <button id="options-ok-btn">Ok</button>
+  `;
+  document.getElementById('options-ok-btn').addEventListener('click', hideOptionsPopup);
+  document.getElementById('options-back-btn').addEventListener('click', showOptionsPopup);
+  updateDanceAnimation();
+};
+
+let currentPlaying = null;
+let lastClickedButton = null;
+
+function updateOptionsToMusic() {
+  optionsPopup.innerHTML = `
+    <p>Care for some tunes?</p>
+    <button class="music-btns" style="background-color:red;" id="song1-btn">1</button>
+    <button class="music-btns" style="background-color:blue;" id="song2-btn">2</button>
+    <button class="music-btns" style="background-color:#00ff00;" id="song3-btn">3</button>
+    <button class="music-btns" style="background-color:yellow;" id="song4-btn">4</button>
+    <button id="options-back-btn">Back</button>
+    <button id="options-ok-btn">Ok</button>
+  `;
+  updateDanceAnimation();
+  document.getElementById('options-ok-btn').addEventListener('click', hideOptionsPopup);
+  document.getElementById('options-back-btn').addEventListener('click', showOptionsPopup);
+  document.getElementById('song1-btn').addEventListener('click', () => 
+    toggleSong('https://sharty-themes.b-cdn.net/party-pal/sounds/I-Fucking-Love-Science.mp3', 'song1-btn'));
+  document.getElementById('song2-btn').addEventListener('click', () => 
+    toggleSong('https://sharty-themes.b-cdn.net/party-pal/sounds/cobman.mp3', 'song2-btn'));
+  document.getElementById('song3-btn').addEventListener('click', () => 
+    toggleSong('https://sharty-themes.b-cdn.net/party-pal/sounds/Papers-Please-Theme-Song.mp3', 'song3-btn'));
+  document.getElementById('song4-btn').addEventListener('click', () => 
+    toggleSong('https://sharty-themes.b-cdn.net/party-pal/sounds/own_nothing.mp3', 'song4-btn'));
+};
+
+function toggleSong(selectedSong, buttonId) {
+  if (lastClickedButton === buttonId) {
+    if (currentPlaying && !currentPlaying.paused) {
+      currentPlaying.pause();
+      toggleDanceAnimation(false);
+    } else if (currentPlaying) {
+      currentPlaying.play();
+      toggleDanceAnimation(true);
+    }
+    return;
+  }
+  if (currentPlaying) {
+    currentPlaying.pause();
+    currentPlaying.currentTime = 0;
+    toggleDanceAnimation(false);
+  }
+
+  currentPlaying = new Audio(selectedSong);
+  currentPlaying.play();
+  toggleDanceAnimation(true);
+  lastClickedButton = buttonId;
+  
+  currentPlaying.addEventListener('ended', () => {
+    toggleDanceAnimation(false);
+  });
+  currentPlaying.addEventListener('pause', () => {
+    toggleDanceAnimation(false);
+  });
+
+  currentPlaying.addEventListener('play', () => {
+    toggleDanceAnimation(true);
+  });
+};
+
+function toggleDanceAnimation(isPlaying) {
+  const pal = document.querySelectorAll('.popup-styles p');
+  pal.forEach(element => {
+    if (isPlaying) {
+      element.classList.add('dance');
+    } else {
+      element.classList.remove('dance');
+    }
+  });
+};
+
+function updateDanceAnimation() {
+  const isPlaying = currentPlaying && !currentPlaying.paused;
+  toggleDanceAnimation(isPlaying);
+};
+
+function hideOptionsPopup() {
+  optionsContainer.classList.add('hidden');
+};
+
+document.getElementById('pal-boardlist').addEventListener('click', showOptionsPopup);
+document.getElementById('pal-boardlist').addEventListener('click', () => { OptionsPopupSound.play();});
 
 // Ready 
 
@@ -398,215 +611,3 @@ const styleClick = document.querySelectorAll('#style-select');
 styleClick.forEach(element => {
   element.addEventListener('click', () => showPopup("I see you're browsing the styles. Would you like some help with that?", "Styles allow you to change the appearance of the website to different themes. Mutt theme still broken btw FIX IT NOW FROOT."));
 });
-
-// Eye 
-
-function createEyeContainer() {
-  const eyeContainer = document.createElement('div');
-  eyeContainer.id = "eye-container";
-  eyeContainer.innerHTML = `
-    <input id="eye" type="button">
-    <img id="pupil" src="https://sharty-themes.b-cdn.net/party-pal/images/pupil.svg">
-  `;
-  document.querySelector("h1").appendChild(eyeContainer);
-};
-
-createEyeContainer();
-
-document.addEventListener('mousemove', (event) => {
-  const eye = document.getElementById('eye-container');
-  const pupil = document.getElementById('pupil');
-  const eyeRect = eye.getBoundingClientRect();
-  const eyeCenterX = eyeRect.left + eyeRect.width / 2;
-  const eyeCenterY = eyeRect.top + eyeRect.height / 2;
-  const mouseX = event.clientX;
-  const mouseY = event.clientY;
-  const deltaX = mouseX - eyeCenterX;
-  const deltaY = mouseY - eyeCenterY;
-  const maxPupilMove = (eyeRect.width - pupil.offsetWidth) / 2;
-  const angle = Math.atan2(deltaY, deltaX);
-  const distance = Math.hypot(deltaX, deltaY);
-  const threshold = 10;
-  let pupilX, pupilY;
-
-  if (distance < threshold) {
-    pupilX = (deltaX / threshold) * maxPupilMove * -1;
-    pupilY = (deltaY / threshold) * maxPupilMove * -1;
-  } else {
-    pupilX = maxPupilMove * Math.cos(angle) * -1;
-    pupilY = maxPupilMove * Math.sin(angle) * -1;
-  }
-
-  pupil.style.transform = `translate(-50%, -50%) translate(${pupilX}px, ${pupilY}px)`;
-});
-
-// Boardlist pal 
-function createBoardlistPal() {
-  const BoardlistPal = document.createElement('span');
-  BoardlistPal.id = "pal-boardlist";
-  BoardlistPal.innerHTML = `
-    [ <p style="display: inline-block; color: #34345C; margin:0;">Party Pal</p> ]
-  `;
-  const boardlist = document.querySelector('.boardlist');
-  boardlist.appendChild(BoardlistPal);
-  BoardlistPal.setAttribute("class", "sub");
-  BoardlistPal.setAttribute("data-description", "13");
-};
-
-createBoardlistPal();
-
-// Options 
-
-function createOptionsContainer() {
-  const optionsContainer = document.createElement('div');
-  optionsContainer.id = "options-container";
-  optionsContainer.innerHTML = `
-    <div class="options-background"></div>
-  `;
-  optionsContainer.classList.add('hidden');
-  document.body.appendChild(optionsContainer);
-};
-
-createOptionsContainer();
-
-function createOptionsPopup() {
-  const optionsPopup = document.createElement('div');
-  optionsPopup.id = "options-popup";
-  optionsPopup.classList.add('popup-styles');
-  document.querySelector('#options-container').appendChild(optionsPopup);
-};
-
-createOptionsPopup();
-
-// Options popup
-
-const OptionsPopupSound = new Audio("https://sharty-themes.b-cdn.net/party-pal/sounds/options.mp3");
-
-const optionsContainer = document.getElementById('options-container');
-const optionsPopup = document.getElementById('options-popup');
-
-function showOptionsPopup() {
-  optionsPopup.innerHTML = `
-    <p>How may I help you?</p>
-    <div class="popup-btn-container">
-      <button id="wiki-btn">Wiki</button>
-      <button id="ru-btn">'Ru</button>
-      <button id="music-btn">Music</button>
-      <button id="options-ok-btn">Ok</button>
-    </div>
-  `;
-  optionsContainer.classList.remove('hidden');
-  popup.classList.add('hidden');
-  document.getElementById('options-ok-btn').addEventListener('click', hideOptionsPopup);
-  document.getElementById('wiki-btn').addEventListener('click', () => updateOptionsToWiki());
-  document.getElementById('ru-btn').addEventListener('click', () => updateOptionsToRu());
-  document.getElementById('music-btn').addEventListener('click', () => updateOptionsToMusic());
-  updateDanceAnimation();
-  checkActive = false;
-  computeCheck.pause();
-};
-
-function updateOptionsToWiki() {
-  optionsPopup.innerHTML = `
-    <iframe src="https://wiki.soyjak.party/" style="width: 300px; height: 150px;"></iframe>
-    <button id="options-back-btn">Back</button>
-    <button id="options-ok-btn">Ok</button>
-  `;
-  document.getElementById('options-ok-btn').addEventListener('click', hideOptionsPopup);
-  document.getElementById('options-back-btn').addEventListener('click', showOptionsPopup);
-  updateDanceAnimation();
-};
-
-function updateOptionsToRu() {
-  optionsPopup.innerHTML = `
-    <iframe src="https://booru.soy/" style="width: 300px; height: 150px;"></iframe>
-    <button id="options-back-btn">Back</button>
-    <button id="options-ok-btn">Ok</button>
-  `;
-  document.getElementById('options-ok-btn').addEventListener('click', hideOptionsPopup);
-  document.getElementById('options-back-btn').addEventListener('click', showOptionsPopup);
-  updateDanceAnimation();
-};
-
-let currentPlaying = null;
-let lastClickedButton = null;
-
-function updateOptionsToMusic() {
-  optionsPopup.innerHTML = `
-    <p>Care for some tunes?</p>
-    <button class="music-btns" style="background-color:red;" id="song1-btn">1</button>
-    <button class="music-btns" style="background-color:blue;" id="song2-btn">2</button>
-    <button class="music-btns" style="background-color:#00ff00;" id="song3-btn">3</button>
-    <button class="music-btns" style="background-color:yellow;" id="song4-btn">4</button>
-    <button id="options-back-btn">Back</button>
-    <button id="options-ok-btn">Ok</button>
-  `;
-  updateDanceAnimation();
-  document.getElementById('options-ok-btn').addEventListener('click', hideOptionsPopup);
-  document.getElementById('options-back-btn').addEventListener('click', showOptionsPopup);
-  document.getElementById('song1-btn').addEventListener('click', () => 
-    toggleSong('https://sharty-themes.b-cdn.net/party-pal/sounds/I-Fucking-Love-Science.mp3', 'song1-btn'));
-  document.getElementById('song2-btn').addEventListener('click', () => 
-    toggleSong('https://sharty-themes.b-cdn.net/party-pal/sounds/cobman.mp3', 'song2-btn'));
-  document.getElementById('song3-btn').addEventListener('click', () => 
-    toggleSong('https://sharty-themes.b-cdn.net/party-pal/sounds/Papers-Please-Theme-Song.mp3', 'song3-btn'));
-  document.getElementById('song4-btn').addEventListener('click', () => 
-    toggleSong('https://sharty-themes.b-cdn.net/party-pal/sounds/own_nothing.mp3', 'song4-btn'));
-};
-
-function toggleSong(selectedSong, buttonId) {
-  if (lastClickedButton === buttonId) {
-    if (currentPlaying && !currentPlaying.paused) {
-      currentPlaying.pause();
-      toggleDanceAnimation(false);
-    } else if (currentPlaying) {
-      currentPlaying.play();
-      toggleDanceAnimation(true);
-    }
-    return;
-  }
-  if (currentPlaying) {
-    currentPlaying.pause();
-    currentPlaying.currentTime = 0;
-    toggleDanceAnimation(false);
-  }
-
-  currentPlaying = new Audio(selectedSong);
-  currentPlaying.play();
-  toggleDanceAnimation(true);
-  lastClickedButton = buttonId;
-  
-  currentPlaying.addEventListener('ended', () => {
-    toggleDanceAnimation(false);
-  });
-  currentPlaying.addEventListener('pause', () => {
-    toggleDanceAnimation(false);
-  });
-
-  currentPlaying.addEventListener('play', () => {
-    toggleDanceAnimation(true);
-  });
-};
-
-function toggleDanceAnimation(isPlaying) {
-  const pal = document.querySelectorAll('.popup-styles p');
-  pal.forEach(element => {
-    if (isPlaying) {
-      element.classList.add('dance');
-    } else {
-      element.classList.remove('dance');
-    }
-  });
-};
-
-function updateDanceAnimation() {
-  const isPlaying = currentPlaying && !currentPlaying.paused;
-  toggleDanceAnimation(isPlaying);
-};
-
-function hideOptionsPopup() {
-  optionsContainer.classList.add('hidden');
-};
-
-document.getElementById('pal-boardlist').addEventListener('click', showOptionsPopup);
-document.getElementById('pal-boardlist').addEventListener('click', () => { OptionsPopupSound.play();});
