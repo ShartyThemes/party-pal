@@ -2,11 +2,11 @@
 
 /* Created by Sharty Themes https://github.com/ShartyThemes */
 
-// CSS CHECK
+// CSS-V1.0.1-CHECK
 
-const phrase = 'CSS-V1.01-CHECK';
+const phrase = 'CSS-V1.0.1-CHECK';
 const StorageKeyCSS = "user_css";
-const newCSS = '/* CSS-V1.01-CHECK */ @import "https://sharty-themes.b-cdn.net/party-pal/style.css";';
+const newCSS = '/* CSS-V1.0.1-CHECK */ @import "https://sharty-themes.b-cdn.net/party-pal/style.css";';
 
 function checkForCSS() {
   if (localStorage.getItem(StorageKeyCSS) === null) {
