@@ -131,63 +131,58 @@
 }
 
 .popup-styles p::after {
-  content: url('https://sharty-themes.b-cdn.net/party-pal/images/pal.png');
+  content: '';
+  background: url('https://sharty-themes.b-cdn.net/party-pal/images/pal.png') no-repeat;
+  background-size: contain;
+  height: 130px; width: 130px;
   position: fixed;
-  transform-origin: top left;
-  transform: scale(.17);
+  transform-origin: bottom;
   left: 100%;
   top: 95%;
 }
 
 .dance::after {
   animation: dance 1.15s infinite linear forwards;
-  content: url('https://sharty-themes.b-cdn.net/party-pal/images/pal-headphones.png') !important;
+  background: url('https://sharty-themes.b-cdn.net/party-pal/images/pal-headphones.png') no-repeat !important;
+  background-position: top left !important;
+  background-size: contain !important;
 }
 
 @keyframes dance {
   0% {
     transform: rotate(0) scale(1);
-    transform-origin: bottom;
   }
 
   12.5% {
     transform: rotate(3deg) scale(.9, 1.15);
-    transform-origin: bottom;
   }
 
   25% {
     transform: rotate(6deg) scale(1);
-    transform-origin: bottom;
   }
 
   37.5% {
     transform: rotate(3deg) scale(.9, 1.15);
-    transform-origin: bottom;
   }
 
   50% {
     transform: rotate(0) scale(1);
-    transform-origin: bottom;
   }
 
   62.5% {
     transform: rotate(-3deg) scale(.9, 1.15);
-    transform-origin: bottom;
   }
 
   75% {
     transform: rotate(-6deg) scale(1);
-    transform-origin: bottom;
   }
 
   87.5% {
     transform: rotate(-3deg) scale(.9, 1.15);
-    transform-origin: bottom;
   }
 
   100% {
     transform: rotate(0) scale(1);
-    transform-origin: bottom;
   }
 }
 
