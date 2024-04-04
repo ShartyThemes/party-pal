@@ -10,7 +10,7 @@ Free to use and modify for non-commercial purposes.
 **Quick Install:** 
 Click on Options in the top right corner of soyjak.party and paste the following code exactly as it is into the User JS, then click the "Update custom Javascript" button. It's that easy!  
 
-load_js("https://sharty-themes.b-cdn.net/party-pal/script.js");  
+load_js("https://cdn.jsdelivr.net/gh/ShartyThemes/party-pal@main/script.js");  
 
 ***Note: This will override any existing user css styles. If you do not want that you must do a manual install.***  
 
