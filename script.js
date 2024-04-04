@@ -2,26 +2,56 @@
 
 /* Created by Sharty Themes https://github.com/ShartyThemes */
 
-// CSS-V1.0.1-CHECK
+// CSS-CHECK
 
-const phrase = 'CSS-V1.0.1-CHECK';
-const StorageKeyCSS = "user_css";
-const newCSS = '/* CSS-V1.0.1-CHECK */ @import "https://sharty-themes.b-cdn.net/party-pal/style.css";';
+const version = 'V1.0.1'
+const checkPhrase = 'CSS-'+version+'-CHECK';
+const userCssStorage = "user_css";
+const currentCSS = localStorage.getItem(userCssStorage);
+const cssCode = '@import "https://cdn.jsdelivr.net/gh/ShartyThemes/party-pal@main/style.css";';
 
-function checkForCSS() {
-  if (localStorage.getItem(StorageKeyCSS) === null) {
-      localStorage.setItem(StorageKeyCSS, newCSS);
-      location.reload();
-  } else {
-      const existingCSS = localStorage.getItem(StorageKeyCSS);
-      if (!existingCSS.includes(phrase)) {
-          localStorage.setItem(StorageKeyCSS, newCSS);
-          location.reload();
-      }
+function importCSS() {
+  if (localStorage.getItem(userCssStorage) === null) {
+    localStorage.setItem(userCssStorage, cssCode);
+    location.reload();
+  } else if (!currentCSS.includes(checkPhrase) && !currentCSS.includes(cssCode)) {
+    localStorage.setItem(userCssStorage, cssCode);
+    location.reload();
   }
-}
+};
 
-checkForCSS();
+importCSS();
+
+async function getImportedCss() {
+  const cssUrl = "https://cdn.jsdelivr.net/gh/ShartyThemes/party-pal@main/style.css";
+  try {
+    const response = await fetch(cssUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch CSS: ${response.statusText}`);
+    }
+    return await response.text();
+  } catch (error) {
+    console.error("Error fetching CSS:", error);
+    return null;
+  }
+};
+
+if (currentCSS.includes(cssCode)) {
+  getImportedCss()
+    .then(fullCssContent => {
+      if (fullCssContent) {
+        if (!fullCssContent.includes(checkPhrase)) {
+          localStorage.setItem(userCssStorage, '/* Error: CSS-Check failed. Your script was detected as using '+version+', which does not match the version found in CSS. If you are using the quick install, this should resolve automatically. Otherwise, reinstall Party Pal using the same version for your css and javscript to remove this error. You can find the latest versions on github. */ '+'\n'+''+'\n'+cssCode);
+        }
+        else {
+          localStorage.setItem(userCssStorage, fullCssContent);
+        };
+      }
+    })
+    .catch(error => {
+      console.error("Error fetching CSS:", error);
+    })
+};
 
 // Start Screen
 
@@ -35,7 +65,7 @@ function createBootup() {
   const line2 = document.createElement('p');
   const line3 = document.createElement('p');
   line2.innerHTML = 'Installing Dataminers...';
-  line3.innerHTML = 'Starting Party Pal Version 1.0.0-alpha...';
+  line3.innerHTML = 'Starting Party Pal Version 1.0.1-alpha...';
   setTimeout(() => {
     bootScreen.appendChild(line2);
   }, 2000);
