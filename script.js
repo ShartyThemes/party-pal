@@ -8,7 +8,7 @@ const version = 'V1.0.1'
 const checkPhrase = 'CSS-'+version+'-CHECK';
 const userCssStorage = "user_css";
 const currentCSS = localStorage.getItem(userCssStorage);
-const cssCode = '@import "https://cdn.jsdelivr.net/gh/ShartyThemes/party-pal@main/style.css";';
+const cssCode = '@import "https://cdn.jsdelivr.net/gh/ShartyThemes/party-pal/style.css";';
 
 function importCSS() {
   if (localStorage.getItem(userCssStorage) === null) {
@@ -23,7 +23,7 @@ function importCSS() {
 importCSS();
 
 async function getImportedCss() {
-  const cssUrl = "https://cdn.jsdelivr.net/gh/ShartyThemes/party-pal@main/style.css";
+  const cssUrl = "https://cdn.jsdelivr.net/gh/ShartyThemes/party-pal/style.css";
   try {
     const response = await fetch(cssUrl);
     if (!response.ok) {
