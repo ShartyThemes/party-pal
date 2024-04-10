@@ -4,7 +4,7 @@
 
 // CSS-CHECK
 
-const version = 'V1.0.1'
+const version = 'V1.0.2'
 const checkPhrase = 'CSS-'+version+'-CHECK';
 const userCssStorage = "user_css";
 const currentCSS = localStorage.getItem(userCssStorage);
@@ -17,7 +17,7 @@ function importCSS() {
   } else if (!currentCSS.includes(checkPhrase) && !currentCSS.includes(cssCode)) {
     localStorage.setItem(userCssStorage, cssCode);
     location.reload();
-  }
+  };
 };
 
 importCSS();
@@ -33,7 +33,7 @@ async function getImportedCss() {
   } catch (error) {
     console.error("Error fetching CSS:", error);
     return null;
-  }
+  };
 };
 
 if (currentCSS.includes(cssCode)) {
@@ -65,7 +65,7 @@ function createBootup() {
   const line2 = document.createElement('p');
   const line3 = document.createElement('p');
   line2.innerHTML = 'Installing Dataminers...';
-  line3.innerHTML = 'Starting Party Pal Version 1.0.1-alpha...';
+  line3.innerHTML = 'Starting Party Pal Version 1.0.2...';
   setTimeout(() => {
     bootScreen.appendChild(line2);
   }, 2000);
@@ -98,7 +98,7 @@ function hideBootScreen() {
     setTimeout(() => {
       showReadyPopup();
     }, 6000);
-  }
+  };
 };
 
 if (!isBootUp) {
@@ -201,13 +201,50 @@ function createEyeContainer() {
   const eyeContainer = document.createElement('div');
   eyeContainer.id = "eye-container";
   eyeContainer.innerHTML = `
-    <input id="eye" type="button">
     <img id="pupil" src="https://sharty-themes.b-cdn.net/party-pal/images/pupil.svg">
+    <input id="eye" type="button">
   `;
   document.querySelector("h1").appendChild(eyeContainer);
 };
 
 createEyeContainer();
+
+const palOff = localStorage.getItem("palOff") === "true";
+if (palOff) {
+  eye.classList.add('eye-off');
+  pupil.classList.add('pupil-off');
+};
+
+const eyeOffAnimation = 'animation: eyeOff 1s ease-out forwards;'
+const pupilShrinkAnimation = 'animation: pupilShrink 1s ease-out forwards;'
+const eyeOnAnimation = 'animation: eyeOff 1s ease-in reverse;'
+const pupilGrowAnimation = 'animation: pupilShrink 1s ease-in reverse;'
+
+function eyeShutOff() {
+  const eye = document.getElementById('eye');
+  const pupil = document.getElementById('pupil');
+  eye.setAttribute('style', eyeOffAnimation);
+  pupil.setAttribute('style', pupilShrinkAnimation);
+  setTimeout(() => {
+    eye.removeAttribute('style');
+    pupil.removeAttribute('style');
+    eye.classList.add('eye-off');
+    pupil.classList.add('pupil-off');
+  }, 1000);
+};
+
+function eyeTurnOn() {
+  const eye = document.getElementById('eye');
+  const pupil = document.getElementById('pupil');
+  eye.classList.remove('eye-off');
+  pupil.classList.remove('pupil-off');
+  eye.setAttribute('style', eyeOnAnimation);
+  pupil.setAttribute('style', pupilGrowAnimation);
+  setTimeout(() => {
+    eye.removeAttribute('style');
+    pupil.removeAttribute('style');
+  }, 1000);
+};
 
 document.addEventListener('mousemove', (event) => {
   const eye = document.getElementById('eye-container');
@@ -278,9 +315,15 @@ createOptionsPopup();
 // Options popup
 
 const OptionsPopupSound = new Audio("https://sharty-themes.b-cdn.net/party-pal/sounds/options.mp3");
+const powerOffSound = new Audio("https://sharty-themes.b-cdn.net/party-pal/sounds/power-off.mp3")
+const powerOnSound = new Audio("https://sharty-themes.b-cdn.net/party-pal/sounds/power-on.mp3")
+const switchSound = new Audio("https://sharty-themes.b-cdn.net/party-pal/sounds/switch.mp3")
 
 const optionsContainer = document.getElementById('options-container');
 const optionsPopup = document.getElementById('options-popup');
+
+let deactivated = false;
+let reactivated = false;
 
 function showOptionsPopup() {
   optionsPopup.innerHTML = `
@@ -291,23 +334,110 @@ function showOptionsPopup() {
       <button id="music-btn">Music</button>
       <button id="options-ok-btn">Ok</button>
     </div>
+    <button id="deactivate-btn"></button>
   `;
   optionsContainer.classList.remove('hidden');
-  popup.classList.add('hidden');
+  popupHidden = popup.classList.contains('hidden') === true;
+  const palOff = localStorage.getItem("palOff") === "true";
+  if (!popupHidden && hidePopup) { 
+    hidePopup();
+  };
   document.getElementById('options-ok-btn').addEventListener('click', hideOptionsPopup);
-  document.getElementById('wiki-btn').addEventListener('click', () => updateOptionsToWiki());
-  document.getElementById('ru-btn').addEventListener('click', () => updateOptionsToRu());
-  document.getElementById('music-btn').addEventListener('click', () => updateOptionsToMusic());
+  document.getElementById('options-ok-btn').addEventListener('click', function() {
+      if (deactivated || reactivated) { 
+        location.reload();
+      };
+    }
+  );
+  document.getElementById('wiki-btn').addEventListener('click', updateOptionsToWiki);
+  document.getElementById('ru-btn').addEventListener('click', updateOptionsToRu);
+  document.getElementById('music-btn').addEventListener('click', updateOptionsToMusic);
+  const deactivateButton = document.getElementById('deactivate-btn')
+  if (palOff) {
+    deactivateButton.style.backgroundColor = "green";
+    deactivateButton.textContent = "Reactivate Pal";
+  } else {
+    deactivateButton.style.backgroundColor = "red";
+    deactivateButton.textContent = "Deactivate Pal";
+  };
+  deactivateButton.addEventListener('click', deactivateButtonClick);
   updateDanceAnimation();
   checkActive = false;
   computeCheck.pause();
 };
 
+function deactivateButtonClick() {
+  switchSound.play();
+  const palOff = localStorage.getItem("palOff") === "true";
+  const deactivateButton = document.getElementById('deactivate-btn');
+  if (deactivated === true || palOff) {
+    powerOnSound.play();
+    eyeTurnOn();
+    localStorage.setItem('palOff', false);
+    localStorage.setItem('ImBack', true);
+    reactivated = true;
+    deactivated = false;
+    deactivateButton.style.backgroundColor = "red";
+    deactivateButton.textContent = "Deactivate Pal";
+  } else if (!palOff || deactivated !== true) {
+    setTimeout(() => {
+      showDeactivatePopup();
+    }, 100);
+  }
+};
+
+function showDeactivatePopup() {
+  hideOptionsPopup();
+  popup.innerHTML = `
+    <p>Are you sure you want to deactivate me? I won't be able to offer you anymore helpful tips until you turn me back on.</p> 
+    <button id="yes-btn">Yes</button>
+    <button id="no-btn">No</button>
+  `;
+  document.getElementById('yes-btn').addEventListener('click', deactivatePal);
+  document.getElementById('no-btn').addEventListener('click', showOptionsPopup);
+  popup.classList.remove('hidden');
+  isPopupActive = true;
+  playPopup();
+  checkActive = false;
+  computeCheck.pause();
+  };
+
+function deactivatePal() {
+  localStorage.setItem('palOff', true);
+  deactivated = true;
+  reactivated = false;
+  powerOffSound.play();
+  eyeShutOff();
+  hidePopup();
+  showOptionsPopup();
+};
+
+const ImBack = localStorage.getItem("ImBack") === "true";
+if (ImBack) {
+  setTimeout(() => {
+    popup.innerHTML = `
+      <p>Did you miss me?</p> 
+    `;
+    popup.classList.remove('hidden');
+    isPopupActive = true;
+    playPopup();
+    updateDanceAnimation();
+    checkActive = false;
+    computeCheck.pause();
+  }, 2000);
+  setTimeout(() => {
+    localStorage.removeItem('ImBack');
+    hidePopup();
+  }, 5000);
+};
+
 function updateOptionsToWiki() {
   optionsPopup.innerHTML = `
     <iframe src="https://wiki.soyjak.party/" style="width: 300px; height: 150px;"></iframe>
-    <button id="options-back-btn">Back</button>
-    <button id="options-ok-btn">Ok</button>
+    <div class="popup-btn-container">
+      <button id="options-back-btn">Back</button>
+      <button id="options-ok-btn">Ok</button>
+    </div>
   `;
   document.getElementById('options-ok-btn').addEventListener('click', hideOptionsPopup);
   document.getElementById('options-back-btn').addEventListener('click', showOptionsPopup);
@@ -317,8 +447,10 @@ function updateOptionsToWiki() {
 function updateOptionsToRu() {
   optionsPopup.innerHTML = `
     <iframe src="https://booru.soy/" style="width: 300px; height: 150px;"></iframe>
+  <div class="popup-btn-container">
     <button id="options-back-btn">Back</button>
     <button id="options-ok-btn">Ok</button>
+  </div>
   `;
   document.getElementById('options-ok-btn').addEventListener('click', hideOptionsPopup);
   document.getElementById('options-back-btn').addEventListener('click', showOptionsPopup);
@@ -335,8 +467,10 @@ function updateOptionsToMusic() {
     <button class="music-btns" style="background-color:blue;" id="song2-btn">2</button>
     <button class="music-btns" style="background-color:#00ff00;" id="song3-btn">3</button>
     <button class="music-btns" style="background-color:yellow;" id="song4-btn">4</button>
-    <button id="options-back-btn">Back</button>
-    <button id="options-ok-btn">Ok</button>
+    <div class="popup-btn-container">
+      <button id="options-back-btn">Back</button>
+      <button id="options-ok-btn">Ok</button>
+    </div>
   `;
   updateDanceAnimation();
   document.getElementById('options-ok-btn').addEventListener('click', hideOptionsPopup);
@@ -361,12 +495,12 @@ function toggleSong(selectedSong, buttonId) {
       toggleDanceAnimation(true);
     }
     return;
-  }
+  };
   if (currentPlaying) {
     currentPlaying.pause();
     currentPlaying.currentTime = 0;
     toggleDanceAnimation(false);
-  }
+  };
 
   currentPlaying = new Audio(selectedSong);
   currentPlaying.play();
@@ -392,7 +526,7 @@ function toggleDanceAnimation(isPlaying) {
       element.classList.add('dance');
     } else {
       element.classList.remove('dance');
-    }
+    };
   });
 };
 
@@ -408,236 +542,239 @@ function hideOptionsPopup() {
 document.getElementById('pal-boardlist').addEventListener('click', showOptionsPopup);
 document.getElementById('pal-boardlist').addEventListener('click', () => { OptionsPopupSound.play();});
 
-// Ready 
+if (!palOff) {
+  
+  // Ready 
 
-function showReadyPopup() {
-  popup.innerHTML = `
-    <p>Hi, I'm Party Pal! Ready to take your soyjak.party experience to the next level?</p> 
-    <div class="popup-btn-container">
+  function showReadyPopup() {
+    popup.innerHTML = `
+      <p>Hi, I'm Party Pal! Ready to take your soyjak.party experience to the next level?</p> 
+      <div class="popup-btn-container">
+        <button id="yes-btn">Yes</button>
+      </div>
+    `;
+    document.getElementById('yes-btn').addEventListener('click', updateReadyPopupToOK);
+    popup.classList.remove('hidden');
+    playPopup();
+    updateDanceAnimation();
+  };
+
+  function updateReadyPopupToOK() {
+    popup.innerHTML = `
+      <p>As you browse the site, I'll offer helpful tips whenever I think you might need them!</p>
+      <div class="popup-btn-container">
+        <button id="ok-btn">OK</button>
+      </div>
+    `;
+    document.getElementById('ok-btn').addEventListener('click', hidePopup);
+    updateDanceAnimation();
+  };
+
+  // Help 
+
+  let isPopupActive = false;
+
+  let allowSelectionCheck = true;
+
+  function showPopup(text, yesText) {
+    popup.innerHTML = `
+      <p>${text}</p> 
       <button id="yes-btn">Yes</button>
-    </div>
-  `;
-  document.getElementById('yes-btn').addEventListener('click', updateReadyPopupToOK);
-  popup.classList.remove('hidden');
-  playPopup();
-  updateDanceAnimation();
-}
+      <button id="no-btn">No</button>
+    `;
+    document.getElementById('yes-btn').addEventListener('click', () => updatePopupToOK(yesText));
+    document.getElementById('no-btn').addEventListener('click', hidePopup);
+    popup.classList.remove('hidden');
+    isPopupActive = true;
+    playPopup();
+    updateDanceAnimation();
+    checkActive = false;
+    computeCheck.pause();
+  };
 
-function updateReadyPopupToOK() {
-  popup.innerHTML = `
-    <p>As you browse the site, I'll offer helpful tips whenever I think you might need them!</p>
-    <div class="popup-btn-container">
+  function hidePopup() {
+    popup.classList.add('hidden');
+    isPopupActive = false;
+    allowSelectionCheck = true;
+    isTextSelected();
+  };
+
+  function updatePopupToOK(yesText) {
+    const newContent = `
+      <p>${yesText}</p> 
       <button id="ok-btn">OK</button>
-    </div>
-  `;
-  document.getElementById('ok-btn').addEventListener('click', hidePopup);
-  updateDanceAnimation();
-}
+    `;
+    popup.innerHTML = newContent;
+    document.getElementById('ok-btn').addEventListener('click', hidePopup);
+    updateDanceAnimation();
+  };
 
-// Help 
+  // Fact Check 
 
-let isPopupActive = false;
+  let checkActive = false;
 
-let allowSelectionCheck = true;
+  const computeCheck = new Audio("https://sharty-themes.b-cdn.net/party-pal/sounds/compute.mp3");
+  const computeDone = new Audio("https://sharty-themes.b-cdn.net/party-pal/sounds/done.mp3");
 
-function showPopup(text, yesText) {
-  popup.innerHTML = `
-    <p>${text}</p> 
-    <button id="yes-btn">Yes</button>
-    <button id="no-btn">No</button>
-  `;
-  document.getElementById('yes-btn').addEventListener('click', () => updatePopupToOK(yesText));
-  document.getElementById('no-btn').addEventListener('click', hidePopup);
-  popup.classList.remove('hidden');
-  isPopupActive = true;
-  playPopup();
-  updateDanceAnimation();
-  checkActive = false;
-  computeCheck.pause();
-};
+  function showFactCheckPopup(resultImage, selectedText) {
+    popup.innerHTML = `
+      <p>I see you've highlighted some text. Would you like to run a fact check?</p> 
+      <button id="yes-btn">Yes</button>
+      <button id="no-btn">No</button>
+    `;
+    document.getElementById('yes-btn').addEventListener('click', () => updatePopupToCheckResult(resultImage, selectedText));
+    document.getElementById('no-btn').addEventListener('click', hideCheckPopup);
+    popup.classList.remove('hidden');
+    playPopup();
+    updateDanceAnimation();
+    checkActive = false;
+    computeCheck.pause();
+  };
 
-function hidePopup() {
-  popup.classList.add('hidden');
-  isPopupActive = false;
-  allowSelectionCheck = true;
-  isTextSelected();
-};
+  function hideCheckPopup() {
+    popup.classList.add('hidden');
+    isPopupActive = false;
+    allowSelectionCheck = false;
+    computeCheck.pause();
+    computeDone.pause();
+    checkActive = false;
+  };
 
-function updatePopupToOK(yesText) {
-  const newContent = `
-    <p>${yesText}</p> 
-    <button id="ok-btn">OK</button>
-  `;
-  popup.innerHTML = newContent;
-  document.getElementById('ok-btn').addEventListener('click', hidePopup);
-  updateDanceAnimation();
-};
+  function updatePopupToCheckResult(resultImage, selectedText) {
+    const FactImageContent = `
+      <img id="fact-check-image" src="${resultImage}" alt="Fact Check Image" />
+      <p class="selected-text">"${selectedText}"</p>
+      <button id="ok-btn">OK</button>
+    `;
+    popup.innerHTML = FactImageContent;
+    document.getElementById('ok-btn').addEventListener('click', hideCheckPopup);
+    updateDanceAnimation();
+    const factCheckResult = document.getElementById('fact-check-image');
+    factCheckResult.style['max-width'] = '60px';
+    allowSelectionCheck = false;
+    computeDone.currentTime=0;
+    computeCheck.currentTime=0;
+    computeCheck.play();
+    checkActive = true;
+    setTimeout(() => {
+      if (factCheckResult) {
+        const imageUrls = [
+          'https://sharty-themes.b-cdn.net/party-pal/images/accurate.png',
+          'https://sharty-themes.b-cdn.net/party-pal/images/unsubstantiated.png',
+          'https://sharty-themes.b-cdn.net/party-pal/images/misleading.png', 
+          'https://sharty-themes.b-cdn.net/party-pal/images/false.png' 
+        ];
+        const randomIndex = Math.floor(Math.random() * imageUrls.length);
+        factCheckResult.style['max-width'] = '150px';
+        factCheckResult.src = imageUrls[randomIndex];
+        computeCheck.pause();
+        setTimeout(() => {
+          playComputeDone();
+        }, 200);
+      };
+    }, 3000);
+  };
 
-// Fact Check 
-
-let checkActive = false;
-
-const computeCheck = new Audio("https://sharty-themes.b-cdn.net/party-pal/sounds/compute.mp3");
-const computeDone = new Audio("https://sharty-themes.b-cdn.net/party-pal/sounds/done.mp3");
-
-function showFactCheckPopup(resultImage, selectedText) {
-  popup.innerHTML = `
-    <p>I see you've highlighted some text. Would you like to run a fact check?</p> 
-    <button id="yes-btn">Yes</button>
-    <button id="no-btn">No</button>
-  `;
-  document.getElementById('yes-btn').addEventListener('click', () => updatePopupToCheckResult(resultImage, selectedText));
-  document.getElementById('no-btn').addEventListener('click', hideCheckPopup);
-  popup.classList.remove('hidden');
-  playPopup();
-  updateDanceAnimation();
-  checkActive = false;
-  computeCheck.pause();
-};
-
-function hideCheckPopup() {
-  popup.classList.add('hidden');
-  isPopupActive = false;
-  allowSelectionCheck = false;
-  computeCheck.pause();
-  computeDone.pause();
-  checkActive = false;
-};
-
-function updatePopupToCheckResult(resultImage, selectedText) {
-  const FactImageContent = `
-    <img id="fact-check-image" src="${resultImage}" alt="Fact Check Image" />
-    <p class="selected-text">"${selectedText}"</p>
-    <button id="ok-btn">OK</button>
-  `;
-  popup.innerHTML = FactImageContent;
-  document.getElementById('ok-btn').addEventListener('click', hideCheckPopup);
-  updateDanceAnimation();
-  const factCheckResult = document.getElementById('fact-check-image');
-  factCheckResult.style['max-width'] = '60px';
-  allowSelectionCheck = false;
-  computeDone.currentTime=0;
-  computeCheck.currentTime=0;
-  computeCheck.play();
-  checkActive = true;
-  setTimeout(() => {
-    if (factCheckResult) {
-      const imageUrls = [
-        'https://sharty-themes.b-cdn.net/party-pal/images/accurate.png',
-        'https://sharty-themes.b-cdn.net/party-pal/images/unsubstantiated.png',
-        'https://sharty-themes.b-cdn.net/party-pal/images/misleading.png', 
-        'https://sharty-themes.b-cdn.net/party-pal/images/false.png' 
-      ];
-      const randomIndex = Math.floor(Math.random() * imageUrls.length);
-      factCheckResult.style['max-width'] = '150px';
-      factCheckResult.src = imageUrls[randomIndex];
-      computeCheck.pause();
-      setTimeout(() => {
-        playComputeDone();
-      }, 200)
+  function playComputeDone() {
+    if (checkActive) {
+      computeDone.play();
     }
-  }, 3000)
-};
-
-function playComputeDone() {
-  if (checkActive) {
-    computeDone.play();
   }
-}
 
-document.addEventListener('mouseup', function() {
-  const selectedText = window.getSelection().toString();
-  if (selectedText.length > 4 && !isPopupActive) {
-    showFactCheckPopup('https://sharty-themes.b-cdn.net/party-pal/images/loading.gif', selectedText);
-    isPopupActive = true;
-  }
-});
+  document.addEventListener('mouseup', function() {
+    const selectedText = window.getSelection().toString();
+    if (selectedText.length > 4 && !isPopupActive) {
+      showFactCheckPopup('https://sharty-themes.b-cdn.net/party-pal/images/loading.gif', selectedText);
+      isPopupActive = true;
+    };
+  });
 
-function isTextSelected() {
-  const selectedText = window.getSelection().toString();
-  if (selectedText.length > 4 && allowSelectionCheck) {
-    showFactCheckPopup('https://sharty-themes.b-cdn.net/party-pal/images/loading.gif', selectedText);
-    isPopupActive = true;
-  }
+  function isTextSelected() {
+    const selectedText = window.getSelection().toString();
+    if (selectedText.length > 4 && allowSelectionCheck) {
+      showFactCheckPopup('https://sharty-themes.b-cdn.net/party-pal/images/loading.gif', selectedText);
+      isPopupActive = true;
+    };
+  };
+
+  // Code Popup 
+
+  const updateJsButton = document.querySelector('input[value="Update custom Javascript"]');
+  const updateCssButton = document.querySelector('input[value="Update custom CSS"]');
+
+  function showCodePopup() {
+    popup.innerHTML = `
+      <p>It looks like you are messing with my code. Are you sure you know what you are doing?</p> 
+      <button id="yes-btn">Yes</button>
+      <button id="no-btn">No</button>
+    `;
+    document.getElementById('yes-btn').addEventListener('click', updatePopupToCodeOK);
+    document.getElementById('no-btn').addEventListener('click', noCodePopup);
+    popup.classList.remove('hidden');
+    playPopup();
+    checkActive = false;
+    computeCheck.pause();
+  };
+
+  function updatePopupToCodeOK() {
+    const newContent = `
+      <p>Don't do anything you will regret.</p> <button id="ok-btn">OK</button>
+    `;
+    popup.innerHTML = newContent;
+    document.getElementById('ok-btn').addEventListener('click', hideCodeYesPopup);
+  };
+
+  function noCodePopup() {
+    updateJsButton.classList.add('hidden');
+    updateCssButton.classList.add('hidden');
+    hidePopup();
+  };
+
+  function hideCodeYesPopup() {
+    popup.classList.add('hidden');
+    updateJsButton.classList.remove('hidden');
+    updateCssButton.classList.remove('hidden');
+  };
+
+  // Help texts 
+
+  const postImageHover = document.querySelectorAll('.post-image');
+  postImageHover.forEach(element => {
+    element.addEventListener('mouseover', () => showPopup("It looks like you're trying to view an image. Would you like some help with that?", "Images provide a visual element to posts. The most commonly posted images are of soyjaks, which can be used to represent the poster's own feelings, or more often to mock the opinions of others. Tip: try clicking on an image to enlarge it."));
+  });
+
+  const postImageClick = document.querySelectorAll('.post-image');
+  postImageClick.forEach(element => {
+    element.addEventListener('click', () => showPopup("It seems you've opened an image. Would you like some help?", 'Enlarging an image helps you see it better. You can click on it again to minimize it. You can also save it to your computer by right clicking on it and selecting "save image as".'));
+  });
+
+  const spanNameHover = document.querySelectorAll('span.name');
+  spanNameHover.forEach(element => {
+    element.addEventListener('mouseover', () => showPopup("It look's like you're viewing a poster's name. Would you like some help with that?", 'Usernames help distinguish between different posters. The most active user is "Chud", who has made over 7 million posts!'));
+  });
+
+  const boardlistHover = document.querySelectorAll('.boardlist a');
+  boardlistHover.forEach(element => {
+    element.addEventListener('mouseover', () => showPopup("It looks like you're trying to find a board. Would you like some help with that?", "The boardlist provides a list available boards for you to visit. Try clicking on one of them to see what that board is about."));
+  });
+
+  const postReplyHover = document.querySelectorAll('.post .body');
+  postReplyHover.forEach(element => {
+    element.addEventListener('mouseover', () => showPopup("I see you're reading a post. Would you like some help with that?", "Posts contain messages made by other users. The first post in a thread is made by the OP or \"original poster\". The posts below that are replies. If you like a post, you can upvote it by calling it a \"gem\", or you can call a post \"coal\" to downvote it."));
+  });
+
+  const textAreaClick = document.querySelectorAll('table textarea');
+  textAreaClick.forEach(element => {
+    element.addEventListener('click', () => showPopup("It looks like you're trying to write a post. Would you like some help with that?", "Creating a post allows you to share your ideas and converse with others. Always be sure to check that your post follows the rules of the board before submitting."));
+  });
+
+  const optionsTabClick = document.querySelectorAll('.options_tab');
+  optionsTabClick.forEach(element => {
+    element.addEventListener('click', showCodePopup);
+  });
+
+  const styleClick = document.querySelectorAll('#style-select');
+  styleClick.forEach(element => {
+    element.addEventListener('click', () => showPopup("I see you're browsing the styles. Would you like some help with that?", "Styles allow you to change the appearance of the website to different themes. Mutt theme still broken btw FIX IT NOW FROOT."));
+  });
 };
-
-// Code Popup 
-
-const updateJsButton = document.querySelector('input[value="Update custom Javascript"]');
-const updateCssButton = document.querySelector('input[value="Update custom CSS"]');
-
-function showCodePopup() {
-  popup.innerHTML = `
-    <p>It looks like you are messing with my code. Are you sure you know what you are doing?</p> 
-    <button id="yes-btn">Yes</button>
-    <button id="no-btn">No</button>
-  `;
-  document.getElementById('yes-btn').addEventListener('click', updatePopupToCodeOK);
-  document.getElementById('no-btn').addEventListener('click', noCodePopup);
-  popup.classList.remove('hidden');
-  playPopup();
-  checkActive = false;
-  computeCheck.pause();
-};
-
-function updatePopupToCodeOK() {
-  const newContent = `
-    <p>Don't do anything you will regret.</p> <button id="ok-btn">OK</button>
-  `;
-  popup.innerHTML = newContent;
-  document.getElementById('ok-btn').addEventListener('click', hideCodeYesPopup);
-};
-
-function noCodePopup() {
-  updateJsButton.classList.add('hidden');
-  updateCssButton.classList.add('hidden');
-  hidePopup();
-};
-
-function hideCodeYesPopup() {
-  popup.classList.add('hidden');
-  updateJsButton.classList.remove('hidden');
-  updateCssButton.classList.remove('hidden');
-}
-
-// Help texts 
-
-const postImageHover = document.querySelectorAll('.post-image');
-postImageHover.forEach(element => {
-  element.addEventListener('mouseover', () => showPopup("It looks like you're trying to view an image. Would you like some help with that?", "Images provide a visual element to posts. The most commonly posted images are of soyjaks, which can be used to represent the poster's own feelings, or more often to mock the opinions of others. Tip: try clicking on an image to enlarge it."));
-});
-
-const postImageClick = document.querySelectorAll('.post-image');
-postImageClick.forEach(element => {
-  element.addEventListener('click', () => showPopup("It seems you've opened an image. Would you like some help?", 'Enlarging an image helps you see it better. You can click on it again to minimize it. You can also save it to your computer by right clicking on it and selecting "save image as".'));
-});
-
-const spanNameHover = document.querySelectorAll('span.name');
-spanNameHover.forEach(element => {
-  element.addEventListener('mouseover', () => showPopup("It look's like you're viewing a poster's name. Would you like some help with that?", 'Usernames help distinguish between different posters. The most active user is "Chud", who has made over 7 million posts!'));
-});
-
-const boardlistHover = document.querySelectorAll('.boardlist a');
-boardlistHover.forEach(element => {
-  element.addEventListener('mouseover', () => showPopup("It looks like you're trying to find a board. Would you like some help with that?", "The boardlist provides a list available boards for you to visit. Try clicking on one of them to see what that board is about."));
-});
-
-const postReplyHover = document.querySelectorAll('.post .body');
-postReplyHover.forEach(element => {
-  element.addEventListener('mouseover', () => showPopup("I see you're reading a post. Would you like some help with that?", "Posts contain messages made by other users. The first post in a thread is made by the OP or \"original poster\". The posts below that are replies. If you like a post, you can upvote it by calling it a \"gem\", or you can call a post \"coal\" to downvote it."));
-});
-
-const textAreaClick = document.querySelectorAll('table textarea');
-textAreaClick.forEach(element => {
-  element.addEventListener('click', () => showPopup("It looks like you're trying to write a post. Would you like some help with that?", "Creating a post allows you to share your ideas and converse with others. Always be sure to check that your post follows the rules of the board before submitting."));
-});
-
-const optionsTabClick = document.querySelectorAll('.options_tab');
-optionsTabClick.forEach(element => {
-  element.addEventListener('click', showCodePopup);
-});
-
-const styleClick = document.querySelectorAll('#style-select');
-styleClick.forEach(element => {
-  element.addEventListener('click', () => showPopup("I see you're browsing the styles. Would you like some help with that?", "Styles allow you to change the appearance of the website to different themes. Mutt theme still broken btw FIX IT NOW FROOT."));
-});
