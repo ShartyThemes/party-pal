@@ -156,6 +156,13 @@ function playPopup() {
   popSound.play();
 };
 
+function hidePopup() {
+  popup.classList.add('hidden');
+  isPopupActive = false;
+  allowSelectionCheck = true;
+  isTextSelected();
+};
+
 // Position Popup
 
 let offsetX = 0;
@@ -339,7 +346,7 @@ function showOptionsPopup() {
   optionsContainer.classList.remove('hidden');
   popupHidden = popup.classList.contains('hidden') === true;
   const palOff = localStorage.getItem("palOff") === "true";
-  if (!popupHidden && hidePopup) { 
+  if (!popupHidden) { 
     hidePopup();
   };
   document.getElementById('options-ok-btn').addEventListener('click', hideOptionsPopup);
@@ -403,12 +410,12 @@ function showDeactivatePopup() {
   };
 
 function deactivatePal() {
+  hidePopup();
   localStorage.setItem('palOff', true);
   deactivated = true;
   reactivated = false;
   powerOffSound.play();
   eyeShutOff();
-  hidePopup();
   showOptionsPopup();
 };
 
@@ -590,13 +597,6 @@ if (!palOff) {
     updateDanceAnimation();
     checkActive = false;
     computeCheck.pause();
-  };
-
-  function hidePopup() {
-    popup.classList.add('hidden');
-    isPopupActive = false;
-    allowSelectionCheck = true;
-    isTextSelected();
   };
 
   function updatePopupToOK(yesText) {
