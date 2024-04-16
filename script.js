@@ -329,6 +329,8 @@ const switchSound = new Audio("https://sharty-themes.b-cdn.net/party-pal/sounds/
 const optionsContainer = document.getElementById('options-container');
 const optionsPopup = document.getElementById('options-popup');
 
+const ImBack = localStorage.getItem("ImBack") === "true";
+
 let deactivated = false;
 let reactivated = false;
 
@@ -407,11 +409,14 @@ function showDeactivatePopup() {
   playPopup();
   checkActive = false;
   computeCheck.pause();
-  };
+};
 
 function deactivatePal() {
   hidePopup();
   localStorage.setItem('palOff', true);
+  if (ImBack) {
+    localStorage.setItem('ImBack', false);
+  };
   deactivated = true;
   reactivated = false;
   powerOffSound.play();
@@ -419,7 +424,6 @@ function deactivatePal() {
   showOptionsPopup();
 };
 
-const ImBack = localStorage.getItem("ImBack") === "true";
 if (ImBack) {
   setTimeout(() => {
     popup.innerHTML = `
@@ -548,8 +552,6 @@ function hideOptionsPopup() {
 
 document.getElementById('pal-boardlist').addEventListener('click', showOptionsPopup);
 document.getElementById('pal-boardlist').addEventListener('click', () => { OptionsPopupSound.play();});
-
-if (!palOff) {
   
   // Ready 
 
@@ -577,110 +579,111 @@ if (!palOff) {
     updateDanceAnimation();
   };
 
-  // Help 
+// Help 
 
-  let isPopupActive = false;
+let isPopupActive = false;
 
-  let allowSelectionCheck = true;
+let allowSelectionCheck = true;
 
-  function showPopup(text, yesText) {
-    popup.innerHTML = `
-      <p>${text}</p> 
-      <button id="yes-btn">Yes</button>
-      <button id="no-btn">No</button>
-    `;
-    document.getElementById('yes-btn').addEventListener('click', () => updatePopupToOK(yesText));
-    document.getElementById('no-btn').addEventListener('click', hidePopup);
-    popup.classList.remove('hidden');
-    isPopupActive = true;
-    playPopup();
-    updateDanceAnimation();
-    checkActive = false;
-    computeCheck.pause();
-  };
+function showPopup(text, yesText) {
+  popup.innerHTML = `
+    <p>${text}</p> 
+    <button id="yes-btn">Yes</button>
+    <button id="no-btn">No</button>
+  `;
+  document.getElementById('yes-btn').addEventListener('click', () => updatePopupToOK(yesText));
+  document.getElementById('no-btn').addEventListener('click', hidePopup);
+  popup.classList.remove('hidden');
+  isPopupActive = true;
+  playPopup();
+  updateDanceAnimation();
+  checkActive = false;
+  computeCheck.pause();
+};
 
-  function updatePopupToOK(yesText) {
-    const newContent = `
-      <p>${yesText}</p> 
-      <button id="ok-btn">OK</button>
-    `;
-    popup.innerHTML = newContent;
-    document.getElementById('ok-btn').addEventListener('click', hidePopup);
-    updateDanceAnimation();
-  };
+function updatePopupToOK(yesText) {
+  const newContent = `
+    <p>${yesText}</p> 
+    <button id="ok-btn">OK</button>
+  `;
+  popup.innerHTML = newContent;
+  document.getElementById('ok-btn').addEventListener('click', hidePopup);
+  updateDanceAnimation();
+};
 
-  // Fact Check 
+// Fact Check 
 
-  let checkActive = false;
+let checkActive = false;
 
-  const computeCheck = new Audio("https://sharty-themes.b-cdn.net/party-pal/sounds/compute.mp3");
-  const computeDone = new Audio("https://sharty-themes.b-cdn.net/party-pal/sounds/done.mp3");
+const computeCheck = new Audio("https://sharty-themes.b-cdn.net/party-pal/sounds/compute.mp3");
+const computeDone = new Audio("https://sharty-themes.b-cdn.net/party-pal/sounds/done.mp3");
 
-  function showFactCheckPopup(resultImage, selectedText) {
-    popup.innerHTML = `
-      <p>I see you've highlighted some text. Would you like to run a fact check?</p> 
-      <button id="yes-btn">Yes</button>
-      <button id="no-btn">No</button>
-    `;
-    document.getElementById('yes-btn').addEventListener('click', () => updatePopupToCheckResult(resultImage, selectedText));
-    document.getElementById('no-btn').addEventListener('click', hideCheckPopup);
-    popup.classList.remove('hidden');
-    playPopup();
-    updateDanceAnimation();
-    checkActive = false;
-    computeCheck.pause();
-  };
+function showFactCheckPopup(resultImage, selectedText) {
+  popup.innerHTML = `
+    <p>I see you've highlighted some text. Would you like to run a fact check?</p> 
+    <button id="yes-btn">Yes</button>
+    <button id="no-btn">No</button>
+  `;
+  document.getElementById('yes-btn').addEventListener('click', () => updatePopupToCheckResult(resultImage, selectedText));
+  document.getElementById('no-btn').addEventListener('click', hideCheckPopup);
+  popup.classList.remove('hidden');
+  playPopup();
+  updateDanceAnimation();
+  checkActive = false;
+  computeCheck.pause();
+};
 
-  function hideCheckPopup() {
-    popup.classList.add('hidden');
-    isPopupActive = false;
-    allowSelectionCheck = false;
-    computeCheck.pause();
-    computeDone.pause();
-    checkActive = false;
-  };
+function hideCheckPopup() {
+  popup.classList.add('hidden');
+  isPopupActive = false;
+  allowSelectionCheck = false;
+  computeCheck.pause();
+  computeDone.pause();
+  checkActive = false;
+};
 
-  function updatePopupToCheckResult(resultImage, selectedText) {
-    const FactImageContent = `
-      <img id="fact-check-image" src="${resultImage}" alt="Fact Check Image" />
-      <p class="selected-text">"${selectedText}"</p>
-      <button id="ok-btn">OK</button>
-    `;
-    popup.innerHTML = FactImageContent;
-    document.getElementById('ok-btn').addEventListener('click', hideCheckPopup);
-    updateDanceAnimation();
-    const factCheckResult = document.getElementById('fact-check-image');
-    factCheckResult.style['max-width'] = '60px';
-    allowSelectionCheck = false;
-    computeDone.currentTime=0;
-    computeCheck.currentTime=0;
-    computeCheck.play();
-    checkActive = true;
-    setTimeout(() => {
-      if (factCheckResult) {
-        const imageUrls = [
-          'https://sharty-themes.b-cdn.net/party-pal/images/accurate.png',
-          'https://sharty-themes.b-cdn.net/party-pal/images/unsubstantiated.png',
-          'https://sharty-themes.b-cdn.net/party-pal/images/misleading.png', 
-          'https://sharty-themes.b-cdn.net/party-pal/images/false.png' 
-        ];
-        const randomIndex = Math.floor(Math.random() * imageUrls.length);
-        factCheckResult.style['max-width'] = '150px';
-        factCheckResult.src = imageUrls[randomIndex];
-        computeCheck.pause();
-        setTimeout(() => {
-          playComputeDone();
-        }, 200);
-      };
-    }, 3000);
-  };
+function updatePopupToCheckResult(resultImage, selectedText) {
+  const FactImageContent = `
+    <img id="fact-check-image" src="${resultImage}" alt="Fact Check Image" />
+    <p class="selected-text">"${selectedText}"</p>
+    <button id="ok-btn">OK</button>
+  `;
+  popup.innerHTML = FactImageContent;
+  document.getElementById('ok-btn').addEventListener('click', hideCheckPopup);
+  updateDanceAnimation();
+  const factCheckResult = document.getElementById('fact-check-image');
+  factCheckResult.style['max-width'] = '60px';
+  allowSelectionCheck = false;
+  computeDone.currentTime=0;
+  computeCheck.currentTime=0;
+  computeCheck.play();
+  checkActive = true;
+  setTimeout(() => {
+    if (factCheckResult) {
+      const imageUrls = [
+        'https://sharty-themes.b-cdn.net/party-pal/images/accurate.png',
+        'https://sharty-themes.b-cdn.net/party-pal/images/unsubstantiated.png',
+        'https://sharty-themes.b-cdn.net/party-pal/images/misleading.png', 
+        'https://sharty-themes.b-cdn.net/party-pal/images/false.png' 
+      ];
+      const randomIndex = Math.floor(Math.random() * imageUrls.length);
+      factCheckResult.style['max-width'] = '150px';
+      factCheckResult.src = imageUrls[randomIndex];
+      computeCheck.pause();
+      setTimeout(() => {
+        playComputeDone();
+      }, 200);
+    };
+  }, 3000);
+};
 
-  function playComputeDone() {
-    if (checkActive) {
-      computeDone.play();
-    }
+function playComputeDone() {
+  if (checkActive) {
+    computeDone.play();
   }
+}
 
+if (!palOff) {
   document.addEventListener('mouseup', function() {
     const selectedText = window.getSelection().toString();
     if (selectedText.length > 4 && !isPopupActive) {
@@ -688,7 +691,9 @@ if (!palOff) {
       isPopupActive = true;
     };
   });
+};
 
+if (!palOff) {
   function isTextSelected() {
     const selectedText = window.getSelection().toString();
     if (selectedText.length > 4 && allowSelectionCheck) {
@@ -696,48 +701,50 @@ if (!palOff) {
       isPopupActive = true;
     };
   };
+};
 
-  // Code Popup 
+// Code Popup 
 
-  const updateJsButton = document.querySelector('input[value="Update custom Javascript"]');
-  const updateCssButton = document.querySelector('input[value="Update custom CSS"]');
+const updateJsButton = document.querySelector('input[value="Update custom Javascript"]');
+const updateCssButton = document.querySelector('input[value="Update custom CSS"]');
 
-  function showCodePopup() {
-    popup.innerHTML = `
-      <p>It looks like you are messing with my code. Are you sure you know what you are doing?</p> 
-      <button id="yes-btn">Yes</button>
-      <button id="no-btn">No</button>
-    `;
-    document.getElementById('yes-btn').addEventListener('click', updatePopupToCodeOK);
-    document.getElementById('no-btn').addEventListener('click', noCodePopup);
-    popup.classList.remove('hidden');
-    playPopup();
-    checkActive = false;
-    computeCheck.pause();
-  };
+function showCodePopup() {
+  popup.innerHTML = `
+    <p>It looks like you are messing with my code. Are you sure you know what you are doing?</p> 
+    <button id="yes-btn">Yes</button>
+    <button id="no-btn">No</button>
+  `;
+  document.getElementById('yes-btn').addEventListener('click', updatePopupToCodeOK);
+  document.getElementById('no-btn').addEventListener('click', noCodePopup);
+  popup.classList.remove('hidden');
+  playPopup();
+  checkActive = false;
+  computeCheck.pause();
+};
 
-  function updatePopupToCodeOK() {
-    const newContent = `
-      <p>Don't do anything you will regret.</p> <button id="ok-btn">OK</button>
-    `;
-    popup.innerHTML = newContent;
-    document.getElementById('ok-btn').addEventListener('click', hideCodeYesPopup);
-  };
+function updatePopupToCodeOK() {
+  const newContent = `
+    <p>Don't do anything you will regret.</p> <button id="ok-btn">OK</button>
+  `;
+  popup.innerHTML = newContent;
+  document.getElementById('ok-btn').addEventListener('click', hideCodeYesPopup);
+};
 
-  function noCodePopup() {
-    updateJsButton.classList.add('hidden');
-    updateCssButton.classList.add('hidden');
-    hidePopup();
-  };
+function noCodePopup() {
+  updateJsButton.classList.add('hidden');
+  updateCssButton.classList.add('hidden');
+  hidePopup();
+};
 
-  function hideCodeYesPopup() {
-    popup.classList.add('hidden');
-    updateJsButton.classList.remove('hidden');
-    updateCssButton.classList.remove('hidden');
-  };
+function hideCodeYesPopup() {
+  popup.classList.add('hidden');
+  updateJsButton.classList.remove('hidden');
+  updateCssButton.classList.remove('hidden');
+};
 
-  // Help texts 
+// Help texts 
 
+if (!palOff) {
   const postImageHover = document.querySelectorAll('.post-image');
   postImageHover.forEach(element => {
     element.addEventListener('mouseover', () => showPopup("It looks like you're trying to view an image. Would you like some help with that?", "Images provide a visual element to posts. The most commonly posted images are of soyjaks, which can be used to represent the poster's own feelings, or more often to mock the opinions of others. Tip: try clicking on an image to enlarge it."));
