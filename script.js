@@ -681,21 +681,22 @@ function playComputeDone() {
   if (checkActive) {
     computeDone.play();
   }
-}
+};
 
-if (!palOff) {
-  document.addEventListener('mouseup', function() {
-    const selectedText = window.getSelection().toString();
+document.addEventListener('mouseup', function() {
+  const selectedText = window.getSelection().toString();
+  if (!palOff) {
     if (selectedText.length > 4 && !isPopupActive) {
       showFactCheckPopup('https://sharty-themes.b-cdn.net/party-pal/images/loading.gif', selectedText);
       isPopupActive = true;
     };
-  });
-};
+  };
+});
 
-if (!palOff) {
-  function isTextSelected() {
-    const selectedText = window.getSelection().toString();
+
+function isTextSelected() {
+  const selectedText = window.getSelection().toString();
+  if (!palOff) {
     if (selectedText.length > 4 && allowSelectionCheck) {
       showFactCheckPopup('https://sharty-themes.b-cdn.net/party-pal/images/loading.gif', selectedText);
       isPopupActive = true;
