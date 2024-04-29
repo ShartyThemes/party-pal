@@ -414,9 +414,7 @@ function showDeactivatePopup() {
 function deactivatePal() {
   hidePopup();
   localStorage.setItem('palOff', true);
-  if (ImBack) {
-    localStorage.setItem('ImBack', false);
-  };
+  localStorage.setItem('ImBack', false);
   deactivated = true;
   reactivated = false;
   powerOffSound.play();
@@ -424,7 +422,7 @@ function deactivatePal() {
   showOptionsPopup();
 };
 
-if (ImBack) {
+if (ImBack && !palOff) {
   setTimeout(() => {
     popup.innerHTML = `
       <p>Did you miss me?</p> 
